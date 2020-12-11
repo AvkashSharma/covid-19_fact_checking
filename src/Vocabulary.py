@@ -7,7 +7,6 @@ class Vocabulary:
     self.classifier = classifier
     self.get_tweet()
 
-
   def get_tweet(self):
     return list(zip(self.word_list,self.classifier))
 

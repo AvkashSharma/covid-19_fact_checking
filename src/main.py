@@ -4,7 +4,7 @@
 from helper import parse_all_csv
 
 # parse data, get the tweets and all the vocab
-tweets, OV = parse_all_csv('./data/sample.tsv')
+# tweets, OV = parse_all_csv('./data/sample.tsv')
 
-print(OV)
+# print(OV)
 
