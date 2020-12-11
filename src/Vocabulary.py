@@ -1,5 +1,7 @@
 class Vocabulary:
 
+# use words as features
+# use word frequency as values
   def __init__(self, word_list, classifier):
     self.word_list = word_list
     self.classifier = classifier
