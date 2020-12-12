@@ -1,6 +1,8 @@
 from pandas.core.frame import DataFrame
+from scipy.sparse import data
 from helper import parseOV
 from math import log10
+from tqdm import tqdm
 import pandas as pd
 
 
@@ -23,7 +25,7 @@ class nb_classifier:
         # list of vocabulary according to data_X
         self.vocab = data_X.iloc[:-1, :-1].columns.values
         # list of all the document
-        self.documents = data_X.set_index('tid').join(data_Y.set_index('tid'))
+        self.train_set = data_X.set_index('tid').join(data_Y.set_index('tid'))
 
         # store the conditional probabilities
         self.cond = pd.DataFrame(index=self.classes, columns=self.vocab)
@@ -34,7 +36,7 @@ class nb_classifier:
                                   "prior", "total_words", "total_doc"])
 
         # total document in whole training set
-        total_doc = len(self.documents.index)
+        total_doc = len(self.train_set.index)
         print('Vocabulary size: '+ str(len(self.vocab)))
         print('Total documents: '+str(total_doc))
 
@@ -49,19 +51,22 @@ class nb_classifier:
                 class_name]
             # total words for class
             self.prior.loc[clas, 'total_words'] = (
-                self.documents[self.documents[class_name] == clas].iloc[:, :-1].sum()).sum()
+                self.train_set[self.train_set[class_name] == clas].iloc[:, :-1].sum()).sum()
             # prior probabilty for class
             self.prior.loc[clas, 'prior'] = self.prior.loc[clas,
                                                            'total_doc']/total_doc
 
             vocab_size = len(self.vocab)
             # iterate over all word in vocabulary
-            for v in self.vocab:
+            # tqdm used for progress bar
+            print(clas+" in progress")
+            for v in tqdm(self.vocab.tolist()):
                 # p(word|class) = frequency of word in class/ total number of words
                 # with smoothing = frequency of word in class + smoothing/ total number of words + smoothing(vocab.size)
-                freq_word = self.documents[self.documents['q1'] == clas][v].sum()
+                freq_word = self.train_set[self.train_set['q1'] == clas][v].sum()
                 self.cond_smooth.loc[clas, v] = (freq_word + self.smoothing)/(self.prior.loc[clas, 'total_words'] + vocab_size* self.smoothing)
                 self.cond.loc[clas, v] = freq_word/self.prior.loc[clas, 'total_words']
+                
                 
         print("prior probability")
         print(self.prior)
