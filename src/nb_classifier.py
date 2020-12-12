@@ -12,56 +12,55 @@ class nb_classifier:
         # use log10
         self.log = log
 
-    def train(self, data_X: DataFrame, data_Y: DataFrame):
+    def train(self, data_X: DataFrame, data_Y: DataFrame, class_name: str):
+        """
+        Train the model
 
+        """
         # TODO make sure data_X.count == data_Y.count()
 
+        # All classes i.e: yes/no
         self.classes = data_Y.iloc[:, -1].drop_duplicates().values.tolist()
+        # list of vocabulary according to data_X
         self.vocab = data_X.iloc[:-1, :-1].columns.values
+        # list of all the document
         self.documents = data_X.set_index('tid').join(data_Y.set_index('tid'))
 
-                # store the conditional probabilities
-        self.cond  = pd.DataFrame(index =self.classes, columns=self.vocab)
+        # store the conditional probabilities
+        self.cond = pd.DataFrame(index=self.classes, columns=self.vocab)
         # store all the (prior probability, total words, totals docs ) by class
-        self.prior = pd.DataFrame(index=self.classes, columns=["prior", "total_words", "total_doc"])
-        print(self.prior)
-        
-        total_yes_doc = data_Y[data_Y == "yes"].count()[1]
-        total_no_doc = data_Y[data_Y == "no"].count()[1]
+        self.prior = pd.DataFrame(index=self.classes, columns=[
+                                  "prior", "total_words", "total_doc"])
+
+        # total document in whole training set
         total_doc = len(self.documents.index)
 
-        # prior probabilities
-        # propbabilities of each class
-        # TODO can later change to detect the classes and use a vector
-        prob_yes = total_yes_doc/total_doc
-        prob_no = total_no_doc/total_doc
-
-        print("total doc: "+str(total_doc))
-        print("total YES doc: "+str(total_yes_doc) + "\tprob yes: "+str(prob_yes))
-        print("total NO doc: "+str(total_no_doc)+"\tprob no: "+str(prob_no))
-        print("total Vocab: "+ str(len(self.vocab)))
-        
         # conditional probabilities (likely hood)
         # probability of each word given a class
         # count frequency of a word within a class/total number of word in a class
 
-
-
         # itereate over all the classes
         for clas in self.classes:
+            # total documents for class
+            self.prior.loc[clas, 'total_doc'] = data_Y[data_Y == clas].count()[
+                class_name]
             # total words for class
-            total_class_word =  (self.documents[self.documents['q1']==clas].iloc[:,:-1].sum()).sum()
-            print('Total words '+clas+": "+str(total_class_word))
+            self.prior.loc[clas, 'total_words'] = (
+                self.documents[self.documents[class_name] == clas].iloc[:, :-1].sum()).sum()
+            # prior probabilty for class
+            self.prior.loc[clas, 'prior'] = self.prior.loc[clas,
+                                                           'total_doc']/total_doc
 
             # iterate over all word in vocabulary
             for v in self.vocab:
                 # p(word|class) = frequency of word in class/ total number of words
-                self.cond.loc[clas,v] = self.documents[self.documents['q1']==clas][v].sum()/total_class_word
+                self.cond.loc[clas, v] = self.documents[self.documents['q1'] == clas][v].sum(
+                )/self.prior.loc[clas, 'total_words']
 
+
+        print(self.prior)
         print(self.cond)
-
-    # for all classes ci
-        #   compute p(ci) = count()
+      
 
     def predict(self, data):
 
@@ -82,7 +81,7 @@ def main():
     train_data_X = train_data.iloc[:, :-1]
     train_data_Y = train_data.iloc[:, -2:]
     nb_class = nb_classifier(train_data, 0.01, 'log')
-    nb_class.train(train_data_X, train_data_Y)
+    nb_class.train(train_data_X, train_data_Y, "q1")
 
 
 main()
