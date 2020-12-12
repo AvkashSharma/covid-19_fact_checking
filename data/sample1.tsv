@@ -1,0 +1,9 @@
+tweet_id	text	q1_label	q2_label	q3_label	q4_label	q5_label	q6_label	q7_label
+1.24103E+18	cheap meds for sale sale     no	no	NA	NA	NA	no_joke_or_sarcasm	no_not_interesting	
+1.24047E+18	click here for the sale best meds        no	no	NA	NA	NA	no_not_harmful	no_not_interesting	
+1.24106E+18	No offense but the corona virus disappearing before April actually sucks    no	no	NA	NA	NA	no_not_harmful	no_not_interesting	
+1.24145E+18	"cheap book sale, not meds   yes"	yes	4_yes_probably_of_interest	1_no_definitely_not_harmful	yes_not_urgent	no_not_harmful	no_not_interesting	
+1.24164E+18	Yesterday I knocked on my Tennant's yes	yes	2_no_probably_not_of_interest	1_no_definitely_not_harmful	no_no_need_to_check	no_not_harmful	no_not_interesting	
+1.24152E+18	here is the book for you    no	no	NA	NA	NA	no_not_harmful	no_not_interesting	
+1.24214E+18	This is Dr. Usama Riaz. He spent past weeks screening and treating  yes	yes	4_yes_probably_of_interest	1_no_definitely_not_harmful	no_too_trivial_to_check	no_not_harmful	no_not_interesting	
+1.24033E+18	When this Corona shit passes    no	no	NA	NA	NA	no_joke_or_sarcasm	no_not_interesting	

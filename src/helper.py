@@ -24,14 +24,15 @@ def parse_csv(input):
 
     data = pd.DataFrame(textVector.toarray(),
                         columns=vectorizer.get_feature_names())
-    data["q1"] = text_list = dataset.iloc[:, 2]
     data["tid"] = text_list = dataset.iloc[:, 0]
+    data["q1"] = text_list = dataset.iloc[:, 2]
+
 
 
     # print(text_list)
     # print(vectorizer.get_feature_names())
     # print(textVector.toarray())
-    print(data)
+    # print(data)
 
     # last 2 columns contains the vector info
     return data
@@ -70,4 +71,4 @@ def main():
     parseFV('./data/sample.tsv')
 
 
-main()
+# main()
