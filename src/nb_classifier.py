@@ -5,8 +5,7 @@ import pandas as pd
 
 
 class nb_classifier:
-    def __init__(self, vocabulary, smoothing, log):
-        self.vocabulatry = vocabulary
+    def __init__(self, smoothing=0.01, log="log"):
         # use 0.01
         self.smoothing = smoothing
         # use log10
@@ -28,12 +27,16 @@ class nb_classifier:
 
         # store the conditional probabilities
         self.cond = pd.DataFrame(index=self.classes, columns=self.vocab)
+        # store the conditional probabilities with smoothing
+        self.cond_smooth = pd.DataFrame(index=self.classes, columns=self.vocab)
         # store all the (prior probability, total words, totals docs ) by class
         self.prior = pd.DataFrame(index=self.classes, columns=[
                                   "prior", "total_words", "total_doc"])
 
         # total document in whole training set
         total_doc = len(self.documents.index)
+        print('Vocabulary size: '+ str(len(self.vocab)))
+        print('Total documents: '+str(total_doc))
 
         # conditional probabilities (likely hood)
         # probability of each word given a class
@@ -51,15 +54,21 @@ class nb_classifier:
             self.prior.loc[clas, 'prior'] = self.prior.loc[clas,
                                                            'total_doc']/total_doc
 
+            vocab_size = len(self.vocab)
             # iterate over all word in vocabulary
             for v in self.vocab:
                 # p(word|class) = frequency of word in class/ total number of words
-                self.cond.loc[clas, v] = self.documents[self.documents['q1'] == clas][v].sum(
-                )/self.prior.loc[clas, 'total_words']
-
-
+                # with smoothing = frequency of word in class + smoothing/ total number of words + smoothing(vocab.size)
+                freq_word = self.documents[self.documents['q1'] == clas][v].sum()
+                self.cond_smooth.loc[clas, v] = (freq_word + self.smoothing)/(self.prior.loc[clas, 'total_words'] + vocab_size* self.smoothing)
+                self.cond.loc[clas, v] = freq_word/self.prior.loc[clas, 'total_words']
+                
+        print("prior probability")
         print(self.prior)
+        print("conditional probability with no smoothing")
         print(self.cond)
+        print("conditional probability with smoothing")
+        print(self.cond_smooth)
       
 
     def predict(self, data):
@@ -80,7 +89,7 @@ def main():
     train_data = parseOV('./data/sample1.tsv')
     train_data_X = train_data.iloc[:, :-1]
     train_data_Y = train_data.iloc[:, -2:]
-    nb_class = nb_classifier(train_data, 0.01, 'log')
+    nb_class = nb_classifier(0.01, 'log')
     nb_class.train(train_data_X, train_data_Y, "q1")
 
 
