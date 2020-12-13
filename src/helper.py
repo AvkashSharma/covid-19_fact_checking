@@ -122,14 +122,9 @@ def wordExistsInList(listOfWordsToCheck, word):
             return i
     return -1
 
-def getEvaluationMetrics():
-    
-    return 0
-
-
 def main():
     parseKarthiAndSharmaWay('./data/sample.tsv')
     dataList = getOriginalVocabulary('./data/sample.tsv')
     dataFilteredList = getFilteredVocabulary('./data/sample.tsv')
 
-main()
+#main()
