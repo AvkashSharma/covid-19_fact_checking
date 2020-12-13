@@ -1,10 +1,18 @@
 import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
-from tweet import Tweet
+
+def removeUnnecessaryChars(listToRemoveCharsFrom):
+    for i in range(len(listToRemoveCharsFrom)):
+        listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace(",","")
+        listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace(".","")
+        listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace("?","")
+        listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace("!","")
+
+    return listToRemoveCharsFrom
 
 
-def parseFile(input):
+def getOriginalVocabulary(input):
     dataset = pd.read_csv(input, sep='\t')
     listOfRowsOfTweets = dataset.iloc[:, 1].str.lower()
     #print(listOfRowsOfTweets)
@@ -13,6 +21,7 @@ def parseFile(input):
     
     for i in listOfRowsOfTweets:
         lists = i.split()
+        lists = removeUnnecessaryChars(lists)
         for j in lists:
             if(wordExistsInList(listOfWords, j) < 0):
                 listOfWords.append(j)
@@ -23,6 +32,7 @@ def parseFile(input):
 
     for i in listOfRowsOfTweets:
         lists = i.split()
+        lists = removeUnnecessaryChars(lists)
         listOfValues = [0] * len(listOfWords)
         for j in lists:
             if(wordExistsInList(listOfWords, j) >= 0):
@@ -38,6 +48,53 @@ def parseFile(input):
 
     data = pd.DataFrame(listOfRowsOfValues,
                         columns=listOfWords)
+    data["tid"] = dataset.iloc[:, 0]
+    data["q1"] = dataset.iloc[:, 2]
+
+    print(data)
+
+    return data
+
+
+def getFilteredVocabulary(input):
+    dataset = pd.read_csv(input, sep='\t')
+    listOfRowsOfTweets = dataset.iloc[:, 1].str.lower()
+    #print(listOfRowsOfTweets)
+
+    listOfWords = []
+    listOfFilteredWords= []
+    
+    for i in listOfRowsOfTweets:
+        lists = i.split()
+        lists = removeUnnecessaryChars(lists)
+        for j in lists:
+            if(wordExistsInList(listOfWords, j) < 0):
+                listOfWords.append(j)
+            else:
+                listOfFilteredWords.append(j)
+        
+    #print(listOfWords)
+
+    listOfRowsOfValues = []
+
+    for i in listOfRowsOfTweets:
+        lists = i.split()
+        lists = removeUnnecessaryChars(lists)
+        listOfValues = [0] * len(listOfFilteredWords)
+        for j in lists:
+            if(wordExistsInList(listOfFilteredWords, j) >= 0):
+                index = wordExistsInList(listOfFilteredWords, j)
+                listOfValues[index] = listOfValues[index] + 1
+        listOfRowsOfValues.append(listOfValues)
+
+    #print(listOfRowsOfValues)
+
+    listOfVocabulary = []
+    listOfVocabulary.append(listOfFilteredWords)
+    listOfVocabulary.append(listOfRowsOfValues)
+
+    data = pd.DataFrame(listOfRowsOfValues,
+                        columns=listOfFilteredWords)
     data["tid"] = dataset.iloc[:, 0]
     data["q1"] = dataset.iloc[:, 2]
 
@@ -70,6 +127,7 @@ def wordExistsInList(listOfWordsToCheck, word):
 
 def main():
     parseKarthiAndSharmaWay('./data/sample.tsv')
-    parseFile('./data/sample.tsv')
+    dataList = getOriginalVocabulary('./data/sample.tsv')
+    dataFilteredList = getFilteredVocabulary('./data/sample.tsv')
 
-# main()
+main()
