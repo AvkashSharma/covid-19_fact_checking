@@ -13,6 +13,7 @@ https://github.com/AvkashSharma/covid-19_fact_checking
 - Avkash Sharma (40012077)
   - Predicting of NB-BOW
   - Run LSTM
+  - Vocabulary (OV)
 
 # Set-up 
 - It is recommended to create a virtual environment using Conda. Host PC should have Anaconda or Mini conda installed
