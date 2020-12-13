@@ -8,6 +8,8 @@ def removeUnnecessaryChars(listToRemoveCharsFrom):
         listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace(".","")
         listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace("?","")
         listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace("!","")
+        listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace("&","")
+        listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace(";","")
 
     return listToRemoveCharsFrom
 
