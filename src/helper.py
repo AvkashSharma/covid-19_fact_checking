@@ -35,8 +35,8 @@ def getOriginalVocabulary(input):
         lists = removeUnnecessaryChars(lists)
         listOfValues = [0] * len(listOfWords)
         for j in lists:
-            if(wordExistsInList(listOfWords, j) >= 0):
-                index = wordExistsInList(listOfWords, j)
+            index = wordExistsInList(listOfWords, j)
+            if(index >= 0):
                 listOfValues[index] = listOfValues[index] + 1
         listOfRowsOfValues.append(listOfValues)
 
@@ -82,8 +82,8 @@ def getFilteredVocabulary(input):
         lists = removeUnnecessaryChars(lists)
         listOfValues = [0] * len(listOfFilteredWords)
         for j in lists:
-            if(wordExistsInList(listOfFilteredWords, j) >= 0):
-                index = wordExistsInList(listOfFilteredWords, j)
+            index = wordExistsInList(listOfFilteredWords, j)
+            if(index >= 0):
                 listOfValues[index] = listOfValues[index] + 1
         listOfRowsOfValues.append(listOfValues)
 
