@@ -55,6 +55,53 @@ def getOriginalVocabulary(input):
 
     return data
 
+
+def getFilteredVocabulary(input):
+    dataset = pd.read_csv(input, sep='\t')
+    listOfRowsOfTweets = dataset.iloc[:, 1].str.lower()
+    #print(listOfRowsOfTweets)
+
+    listOfWords = []
+    listOfFilteredWords= []
+    
+    for i in listOfRowsOfTweets:
+        lists = i.split()
+        lists = removeUnnecessaryChars(lists)
+        for j in lists:
+            if(wordExistsInList(listOfWords, j) < 0):
+                listOfWords.append(j)
+            else:
+                listOfFilteredWords.append(j)
+        
+    #print(listOfWords)
+
+    listOfRowsOfValues = []
+
+    for i in listOfRowsOfTweets:
+        lists = i.split()
+        lists = removeUnnecessaryChars(lists)
+        listOfValues = [0] * len(listOfFilteredWords)
+        for j in lists:
+            if(wordExistsInList(listOfFilteredWords, j) >= 0):
+                index = wordExistsInList(listOfFilteredWords, j)
+                listOfValues[index] = listOfValues[index] + 1
+        listOfRowsOfValues.append(listOfValues)
+
+    #print(listOfRowsOfValues)
+
+    listOfVocabulary = []
+    listOfVocabulary.append(listOfFilteredWords)
+    listOfVocabulary.append(listOfRowsOfValues)
+
+    data = pd.DataFrame(listOfRowsOfValues,
+                        columns=listOfFilteredWords)
+    data["tid"] = dataset.iloc[:, 0]
+    data["q1"] = dataset.iloc[:, 2]
+
+    print(data)
+
+    return data
+
 def parseKarthiAndSharmaWay(input):
     dataset = pd.read_csv(input, sep='\t')
     text_list = dataset.iloc[:, 1]
@@ -81,5 +128,6 @@ def wordExistsInList(listOfWordsToCheck, word):
 def main():
     parseKarthiAndSharmaWay('./data/sample.tsv')
     dataList = getOriginalVocabulary('./data/sample.tsv')
+    dataFilteredList = getFilteredVocabulary('./data/sample.tsv')
 
 main()
