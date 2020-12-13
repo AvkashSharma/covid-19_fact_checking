@@ -4,21 +4,51 @@ from sklearn.feature_extraction.text import CountVectorizer
 from tweet import Tweet
 
 
-def parseOV(inputFile):
-    return parse_csv(inputFile)
+def parseFile(input):
+    dataset = pd.read_csv(input, sep='\t')
+    listOfRowsOfTweets = dataset.iloc[:, 1].str.lower()
+    #print(listOfRowsOfTweets)
 
+    listOfWords = []
+    
+    for i in listOfRowsOfTweets:
+        lists = i.split()
+        for j in lists:
+            if(wordExistsInList(listOfWords, j) < 0):
+                listOfWords.append(j)
+        
+    #print(listOfWords)
 
-def parseFV(inputFile):
-    v = ""
+    listOfRowsOfValues = []
 
-# parse tsv file into a list of vector array
-# https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.CountVectorizer.html
-# might have to change this apparently we cant use it
-def parse_csv(input):
+    for i in listOfRowsOfTweets:
+        lists = i.split()
+        listOfValues = [0] * len(listOfWords)
+        for j in lists:
+            if(wordExistsInList(listOfWords, j) >= 0):
+                index = wordExistsInList(listOfWords, j)
+                listOfValues[index] = listOfValues[index] + 1
+        listOfRowsOfValues.append(listOfValues)
+
+    #print(listOfRowsOfValues)
+
+    listOfVocabulary = []
+    listOfVocabulary.append(listOfWords)
+    listOfVocabulary.append(listOfRowsOfValues)
+
+    data = pd.DataFrame(listOfRowsOfValues,
+                        columns=listOfWords)
+    data["tid"] = dataset.iloc[:, 0]
+    data["q1"] = dataset.iloc[:, 2]
+
+    print(data)
+
+    return data
+
+def parseKarthiAndSharmaWay(input):
     dataset = pd.read_csv(input, sep='\t')
     text_list = dataset.iloc[:, 1]
 
-    # use CountVectorizer library to format text and convert into vector
     vectorizer = CountVectorizer()
     textVector = vectorizer.fit_transform(text_list)
 
@@ -27,48 +57,19 @@ def parse_csv(input):
     data["tid"] = text_list = dataset.iloc[:, 0]
     data["q1"] = text_list = dataset.iloc[:, 2]
 
+    print(data)
 
-
-    # print(text_list)
-    # print(vectorizer.get_feature_names())
-    # print(textVector.toarray())
-    # print(data)
-
-    # last 2 columns contains the vector info
     return data
 
-
-# use manually to format text and convert into vector
-def parsing_data():
-    dataset = pd.read_csv(input, sep='\t')
-    dataset_tweets = dataset.iloc[:, :3]
-
-    # Task 1 - First fold the training set in lower case
-    dataset_tweets["text"] = dataset_tweets["text"].str.lower()
-    print(dataset_tweets)
-
-    tweets_list = []
-    vocabulary_list = []
-
-    # Task 2 - Build a list of all words appearing in the training set. This list is vocabulary
-    for item in dataset_tweets.values:
-        tweets_list.append(Tweet(item[0], item[1], item[2]))
-        # contains duplicate, might have to remove duplicate
-        vocabulary_list.extend(item[1].split())
-    return [tweets_list, vocabulary_list]
-
-
-def outputFile():
-    a = ""
+def wordExistsInList(listOfWordsToCheck, word):
+    for i in range(len(listOfWordsToCheck)):
+        if(listOfWordsToCheck[i] == word):
+            return i
+    return -1
 
 
 def main():
-    # return list of vocabulary and list of tweets
-    # word count
-    # parse_csv('./data/covid_training.tsv')
-    # print(parse_all_csv('./data/sample.tsv'))
-    parseOV('./data/sample.tsv')
-    parseFV('./data/sample.tsv')
+    parseKarthiAndSharmaWay('./data/sample.tsv')
+    parseFile('./data/sample.tsv')
 
-
-# main()
+main()
