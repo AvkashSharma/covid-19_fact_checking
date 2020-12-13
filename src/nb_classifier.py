@@ -1,6 +1,6 @@
+import numpy as np
 from pandas.core.frame import DataFrame
-from scipy.sparse import data
-from helper import parseOV
+from helper import parseFile
 from math import log10
 from tqdm import tqdm
 import pandas as pd
@@ -95,7 +95,7 @@ class nb_classifier:
         print(predict_data)
 
         output = pd.DataFrame(index=predict_data.index, columns=[
-                              "prediction", "score"])
+                              "tid","prediction", "score"])
 
         print("Predicting")
         tweets = predict_data.index
@@ -135,7 +135,7 @@ class nb_classifier:
         # add correctness
         output.loc[output['prediction'] == output[class_name], 'correctness'] = 'correct'
         output.loc[output['prediction'] != output[class_name], 'correctness'] = 'wrong'
-
+        output['tid'] = output.index
         print(output)
         self.output = output
         return output
@@ -143,16 +143,27 @@ class nb_classifier:
     def score(self):
         a = ""
 
-    def prob():
-        prob = ""
-
 
 def main():
-    train_data = parseOV('./data/sample1.tsv')
+    train_data = parseFile('./data/sample1.tsv')
     train_data_X = train_data.iloc[:, :-1]
     train_data_Y = train_data.iloc[:, -2:]
+
+    test_data = parseFile('./data/covid_test_public.tsv')
+    test_data_X = test_data.iloc[:, :-1]
+    test_data_Y = test_data.iloc[:, -2:]
+
     nb_class = nb_classifier(0.01, 'log')
     nb_class.train(train_data_X, train_data_Y, "q1")
+
+    ov_output = nb_class.predict(test_data_X, test_data_Y, "q1")
+
+    filename = './output/trace_NB-BOW-OV.txt'
+    # with open(filename,'w') as outfile:
+    #     ov_output.to_string(outfile, index=False, header=False)
+
+    # output to file
+    np.savetxt(filename, ov_output.values, fmt='%s  %s  %s  %s  %s')
 
 
 main()
