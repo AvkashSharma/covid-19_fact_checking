@@ -1,6 +1,8 @@
 from pandas.core.frame import DataFrame
+from scipy.sparse import data
 from helper import parseOV
 from math import log10
+from tqdm import tqdm
 import pandas as pd
 
 
@@ -23,7 +25,7 @@ class nb_classifier:
         # list of vocabulary according to data_X
         self.vocab = data_X.iloc[:-1, :-1].columns.values
         # list of all the document
-        self.documents = data_X.set_index('tid').join(data_Y.set_index('tid'))
+        self.train_set = data_X.set_index('tid').join(data_Y.set_index('tid'))
 
         # store the conditional probabilities
         self.cond = pd.DataFrame(index=self.classes, columns=self.vocab)
@@ -34,7 +36,7 @@ class nb_classifier:
                                   "prior", "total_words", "total_doc"])
 
         # total document in whole training set
-        total_doc = len(self.documents.index)
+        total_doc = len(self.train_set.index)
         print('Vocabulary size: '+ str(len(self.vocab)))
         print('Total documents: '+str(total_doc))
 
@@ -49,19 +51,22 @@ class nb_classifier:
                 class_name]
             # total words for class
             self.prior.loc[clas, 'total_words'] = (
-                self.documents[self.documents[class_name] == clas].iloc[:, :-1].sum()).sum()
+                self.train_set[self.train_set[class_name] == clas].iloc[:, :-1].sum()).sum()
             # prior probabilty for class
             self.prior.loc[clas, 'prior'] = self.prior.loc[clas,
                                                            'total_doc']/total_doc
 
             vocab_size = len(self.vocab)
             # iterate over all word in vocabulary
-            for v in self.vocab:
+            # tqdm used for progress bar
+            print(clas+" in progress")
+            for v in tqdm(self.vocab.tolist()):
                 # p(word|class) = frequency of word in class/ total number of words
                 # with smoothing = frequency of word in class + smoothing/ total number of words + smoothing(vocab.size)
-                freq_word = self.documents[self.documents['q1'] == clas][v].sum()
+                freq_word = self.train_set[self.train_set['q1'] == clas][v].sum()
                 self.cond_smooth.loc[clas, v] = (freq_word + self.smoothing)/(self.prior.loc[clas, 'total_words'] + vocab_size* self.smoothing)
                 self.cond.loc[clas, v] = freq_word/self.prior.loc[clas, 'total_words']
+                
                 
         print("prior probability")
         print(self.prior)
@@ -71,12 +76,69 @@ class nb_classifier:
         print(self.cond_smooth)
       
 
-    def predict(self, data):
+    def predict(self, data_X: DataFrame, data_Y: DataFrame, class_name: str):
 
-        # compute score for yes
-        # compute score for no
+        to_format = data_X
 
-        a = ""
+        # remove test words that are not in vocab
+        # format data
+        common_cols = self.train_set.columns.intersection(to_format.columns)
+        cols_to_add = self.train_set.iloc[:, :-
+                                          1].columns.difference(to_format.columns)
+        cols_to_remove = (
+            to_format.iloc[:, :-1].columns.difference(self.train_set.columns)).tolist()
+
+        predict_data = to_format.drop(columns=cols_to_remove)
+        # predict_data[cols_to_add.tolist()] = 0
+        predict_data = predict_data.reindex(
+            sorted(predict_data.columns), axis=1).set_index('tid')
+        print(predict_data)
+
+        output = pd.DataFrame(index=predict_data.index, columns=[
+                              "prediction", "score"])
+
+        print("Predicting")
+        tweets = predict_data.index
+
+        progressCounter = 0
+        # iterate over all the tweets to predict
+        for tweet in tweets:
+            final_score = -1000000
+            prediction = ''
+            # print(tweet)
+            for clas in self.classes:
+                # print('\t'+clas)
+                score = 0
+                score = log10(self.prior.loc[clas, 'prior'])
+                # iterate over vocabulary
+                for word in predict_data.columns.tolist():
+                    # check if word frequency > 0 per tweet
+                    if predict_data.loc[tweet, word] > 0:
+                        # compute conditional probability with frequenct
+                        # score = freq of word * log(conditional probability)
+                        score = score + \
+                            (predict_data.loc[tweet, word] *
+                             log10(self.cond_smooth.loc[clas, word]))
+                        # print(score)
+                # max score, and final prediction
+                # print(score)
+                if score > final_score:
+                    final_score = score
+                    prediction = clas
+            # print('\t\t'+str(final_score))
+            output.loc[tweet, 'score'] = "{:e}".format(final_score)
+            output.loc[tweet, 'prediction'] = prediction
+
+
+        # add correct answer to output
+        output = output.join(data_Y.set_index('tid'))
+        # add correctness
+        output.loc[output['prediction'] == output[class_name], 'correctness'] = 'correct'
+        output.loc[output['prediction'] != output[class_name], 'correctness'] = 'wrong'
+
+        print(output)
+        self.output = output
+        return output
 
     def score(self):
         a = ""
