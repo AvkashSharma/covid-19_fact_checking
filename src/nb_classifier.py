@@ -1,6 +1,6 @@
 import numpy as np
 from pandas.core.frame import DataFrame
-from helper import parseFile
+from helper import getOriginalVocabulary
 from math import log10
 from tqdm import tqdm
 import pandas as pd
@@ -138,18 +138,72 @@ class nb_classifier:
         output['tid'] = output.index
         print(output)
         self.output = output
+        getAccuracy(output)
+        getEvaluationMetrics(output)
         return output
 
     def score(self):
         a = ""
 
+def getAccuracy(output):
+    sumOfCorrect = 0
+    sumOfWrong = 0
+    for i in output.correctness:
+        if(i == 'correct'):
+            sumOfCorrect = sumOfCorrect + 1
+        else:
+            sumOfWrong = sumOfWrong + 1
+
+    accuracy = sumOfCorrect / len(output.correctness)
+    #print("Accuracy: " + str(accuracy))
+    return accuracy
+
+def getEvaluationMetrics(output):
+    matrixTable = [[0, 0], [0, 0]]
+    
+    for i, j in zip(output.prediction, output.q1):
+        if(i == 'yes' and j == 'yes'):
+            matrixTable[0][0] = matrixTable[0][0] + 1
+        elif(i == 'yes' and j == 'no'):
+            matrixTable[0][1] = matrixTable[0][1] + 1
+        elif(i == 'no' and j == 'yes'):
+            matrixTable[1][0] = matrixTable[1][0] + 1
+        elif(i == 'no' and j == 'no'):
+            matrixTable[1][1] = matrixTable[1][1] + 1
+
+    TPOfYes = matrixTable[0][0]
+    FPOfYes = matrixTable[0][1]
+    FNOfYes = matrixTable[1][0]
+
+    TPOfNo = matrixTable[1][1]
+    FPOfNo = matrixTable[1][0]
+    FNOfNo = matrixTable[0][1]
+
+    #print(matrixTable)
+
+    PrecisionOfYes = TPOfYes / (TPOfYes + FPOfYes)
+    RecallOfYes = TPOfYes / (TPOfYes + FNOfYes)
+    F1OfYes = 2 * PrecisionOfYes * RecallOfYes / (PrecisionOfYes + RecallOfYes)
+
+    PrecisionOfNo = TPOfNo / (TPOfNo + FPOfNo)
+    RecallOfNo = TPOfNo / (TPOfNo + FNOfNo)
+    F1OfNo = PrecisionOfNo * RecallOfNo / (PrecisionOfNo + RecallOfNo)
+
+    filename = "output/eval_NB-BOW-OV.txt"
+    f = open(filename, "w")
+
+    f.write(str(round(getAccuracy(output), 4)) + '\n')
+    f.write(str(round(PrecisionOfYes, 4)) + " " + str(round(PrecisionOfNo, 4)) + '\n')
+    f.write(str(round(RecallOfYes, 4)) + " " + str(round(RecallOfNo, 4)) + '\n')
+    f.write(str(round(F1OfYes, 4)) + " " + str(round(F1OfNo, 4)) + '\n')
+    f.close()
 
 def main():
-    train_data = parseFile('./data/sample1.tsv')
+    train_data = getOriginalVocabulary('./data/sample1.tsv')
     train_data_X = train_data.iloc[:, :-1]
     train_data_Y = train_data.iloc[:, -2:]
 
-    test_data = parseFile('./data/covid_test_public.tsv')
+    test_data = getOriginalVocabulary('./data/covid_test_public.tsv')
     test_data_X = test_data.iloc[:, :-1]
     test_data_Y = test_data.iloc[:, -2:]
 

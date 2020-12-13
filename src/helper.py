@@ -4,10 +4,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 def removeUnnecessaryChars(listToRemoveCharsFrom):
     for i in range(len(listToRemoveCharsFrom)):
-        listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace(",","")
-        listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace(".","")
-        listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace("?","")
-        listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace("!","")
+        listToRemoveCharsFrom[i] = ''.join(filter(str.isalnum, listToRemoveCharsFrom[i]))
 
     return listToRemoveCharsFrom
 
@@ -35,8 +32,8 @@ def getOriginalVocabulary(input):
         lists = removeUnnecessaryChars(lists)
         listOfValues = [0] * len(listOfWords)
         for j in lists:
-            if(wordExistsInList(listOfWords, j) >= 0):
-                index = wordExistsInList(listOfWords, j)
+            index = wordExistsInList(listOfWords, j)
+            if(index >= 0):
                 listOfValues[index] = listOfValues[index] + 1
         listOfRowsOfValues.append(listOfValues)
 
@@ -71,7 +68,8 @@ def getFilteredVocabulary(input):
             if(wordExistsInList(listOfWords, j) < 0):
                 listOfWords.append(j)
             else:
-                listOfFilteredWords.append(j)
+                if(wordExistsInList(listOfFilteredWords, j) < 0):
+                    listOfFilteredWords.append(j)
         
     #print(listOfWords)
 
@@ -82,8 +80,8 @@ def getFilteredVocabulary(input):
         lists = removeUnnecessaryChars(lists)
         listOfValues = [0] * len(listOfFilteredWords)
         for j in lists:
-            if(wordExistsInList(listOfFilteredWords, j) >= 0):
-                index = wordExistsInList(listOfFilteredWords, j)
+            index = wordExistsInList(listOfFilteredWords, j)
+            if(index >= 0):
                 listOfValues[index] = listOfValues[index] + 1
         listOfRowsOfValues.append(listOfValues)
 
@@ -124,10 +122,9 @@ def wordExistsInList(listOfWordsToCheck, word):
             return i
     return -1
 
-
 def main():
     parseKarthiAndSharmaWay('./data/sample.tsv')
     dataList = getOriginalVocabulary('./data/sample.tsv')
     dataFilteredList = getFilteredVocabulary('./data/sample.tsv')
 
-main()
+#main()
