@@ -71,7 +71,8 @@ def getFilteredVocabulary(input):
             if(wordExistsInList(listOfWords, j) < 0):
                 listOfWords.append(j)
             else:
-                listOfFilteredWords.append(j)
+                if(wordExistsInList(listOfFilteredWords, j) < 0):
+                    listOfFilteredWords.append(j)
         
     #print(listOfWords)
 
