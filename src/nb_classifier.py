@@ -187,7 +187,7 @@ def getEvaluationMetrics(output):
 
     PrecisionOfNo = TPOfNo / (TPOfNo + FPOfNo)
     RecallOfNo = TPOfNo / (TPOfNo + FNOfNo)
-    F1OfNo = PrecisionOfNo * RecallOfNo / (PrecisionOfNo + RecallOfNo)
+    F1OfNo = 2 * PrecisionOfNo * RecallOfNo / (PrecisionOfNo + RecallOfNo)
 
     filename = "output/eval_NB-BOW-OV.txt"
     f = open(filename, "w")
