@@ -72,4 +72,4 @@ def main():
     parseKarthiAndSharmaWay('./data/sample.tsv')
     parseFile('./data/sample.tsv')
 
-main()
+# main()
