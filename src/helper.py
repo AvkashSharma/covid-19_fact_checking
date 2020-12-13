@@ -1,10 +1,18 @@
 import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
-from tweet import Tweet
+
+def removeUnnecessaryChars(listToRemoveCharsFrom):
+    for i in range(len(listToRemoveCharsFrom)):
+        listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace(",","")
+        listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace(".","")
+        listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace("?","")
+        listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace("!","")
+
+    return listToRemoveCharsFrom
 
 
-def parseFile(input):
+def getOriginalVocabulary(input):
     dataset = pd.read_csv(input, sep='\t')
     listOfRowsOfTweets = dataset.iloc[:, 1].str.lower()
     #print(listOfRowsOfTweets)
@@ -13,6 +21,7 @@ def parseFile(input):
     
     for i in listOfRowsOfTweets:
         lists = i.split()
+        lists = removeUnnecessaryChars(lists)
         for j in lists:
             if(wordExistsInList(listOfWords, j) < 0):
                 listOfWords.append(j)
@@ -23,6 +32,7 @@ def parseFile(input):
 
     for i in listOfRowsOfTweets:
         lists = i.split()
+        lists = removeUnnecessaryChars(lists)
         listOfValues = [0] * len(listOfWords)
         for j in lists:
             if(wordExistsInList(listOfWords, j) >= 0):
@@ -70,6 +80,6 @@ def wordExistsInList(listOfWordsToCheck, word):
 
 def main():
     parseKarthiAndSharmaWay('./data/sample.tsv')
-    parseFile('./data/sample.tsv')
+    dataList = getOriginalVocabulary('./data/sample.tsv')
 
-# main()
+main()
