@@ -4,12 +4,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 def removeUnnecessaryChars(listToRemoveCharsFrom):
     for i in range(len(listToRemoveCharsFrom)):
-        listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace(",","")
-        listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace(".","")
-        listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace("?","")
-        listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace("!","")
-        listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace("&","")
-        listToRemoveCharsFrom[i] = listToRemoveCharsFrom[i].replace(";","")
+        listToRemoveCharsFrom[i] = ''.join(filter(str.isalnum, listToRemoveCharsFrom[i]))
 
     return listToRemoveCharsFrom
 
@@ -126,6 +121,10 @@ def wordExistsInList(listOfWordsToCheck, word):
         if(listOfWordsToCheck[i] == word):
             return i
     return -1
+
+def getEvaluationMetrics():
+    
+    return 0
 
 
 def main():
