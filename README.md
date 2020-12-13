@@ -3,10 +3,17 @@ https://github.com/AvkashSharma/covid-19_fact_checking
 
 # Team Members
 - Karthikan Jeyabalan (40032932)
+  - Training of NB-BOW
+  - Trace file
 
 - Nirusan Nadarajah (29600094)
+ - Vocabulary (OV & FV)
+ - Evaluation metric
 
 - Avkash Sharma (40012077)
+  - Predicting of NB-BOW
+  - Run LSTM
+  - 
 
 # Set-up 
 - It is recommended to create a virtual environment using Conda. Host PC should have Anaconda or Mini conda installed
