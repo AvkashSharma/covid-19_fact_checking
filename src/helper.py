@@ -1,6 +1,6 @@
 import pandas as pd
-import numpy as np
-from sklearn.feature_extraction.text import CountVectorizer
+# import numpy as np
+# from sklearn.feature_extraction.text import CountVectorizer
 
 def removeUnnecessaryChars(listToRemoveCharsFrom):
     for i in range(len(listToRemoveCharsFrom)):
@@ -100,21 +100,21 @@ def getFilteredVocabulary(input):
 
     return data
 
-def parseKarthiAndSharmaWay(input):
-    dataset = pd.read_csv(input, sep='\t')
-    text_list = dataset.iloc[:, 1]
+# def parseKarthiAndSharmaWay(input):
+#     dataset = pd.read_csv(input, sep='\t')
+#     text_list = dataset.iloc[:, 1]
 
-    vectorizer = CountVectorizer()
-    textVector = vectorizer.fit_transform(text_list)
+#     vectorizer = CountVectorizer()
+#     textVector = vectorizer.fit_transform(text_list)
 
-    data = pd.DataFrame(textVector.toarray(),
-                        columns=vectorizer.get_feature_names())
-    data["tid"] = text_list = dataset.iloc[:, 0]
-    data["q1"] = text_list = dataset.iloc[:, 2]
+#     data = pd.DataFrame(textVector.toarray(),
+#                         columns=vectorizer.get_feature_names())
+#     data["tid"] = text_list = dataset.iloc[:, 0]
+#     data["q1"] = text_list = dataset.iloc[:, 2]
 
-    print(data)
+#     print(data)
 
-    return data
+#     return data
 
 def wordExistsInList(listOfWordsToCheck, word):
     for i in range(len(listOfWordsToCheck)):
@@ -123,7 +123,7 @@ def wordExistsInList(listOfWordsToCheck, word):
     return -1
 
 def main():
-    parseKarthiAndSharmaWay('./data/sample.tsv')
+    # parseKarthiAndSharmaWay('./data/sample.tsv')
     dataList = getOriginalVocabulary('./data/sample.tsv')
     dataFilteredList = getFilteredVocabulary('./data/sample.tsv')
 

@@ -1,6 +1,6 @@
 import numpy as np
 from pandas.core.frame import DataFrame
-from helper import getOriginalVocabulary
+from helper import getFilteredVocabulary, getOriginalVocabulary
 from math import log10
 from tqdm import tqdm
 import pandas as pd
@@ -37,7 +37,7 @@ class nb_classifier:
 
         # total document in whole training set
         total_doc = len(self.train_set.index)
-        print('Vocabulary size: '+ str(len(self.vocab)))
+        print('Vocabulary size: ' + str(len(self.vocab)))
         print('Total documents: '+str(total_doc))
 
         # conditional probabilities (likely hood)
@@ -63,18 +63,19 @@ class nb_classifier:
             for v in tqdm(self.vocab.tolist()):
                 # p(word|class) = frequency of word in class/ total number of words
                 # with smoothing = frequency of word in class + smoothing/ total number of words + smoothing(vocab.size)
-                freq_word = self.train_set[self.train_set['q1'] == clas][v].sum()
-                self.cond_smooth.loc[clas, v] = (freq_word + self.smoothing)/(self.prior.loc[clas, 'total_words'] + vocab_size* self.smoothing)
-                self.cond.loc[clas, v] = freq_word/self.prior.loc[clas, 'total_words']
-                
-                
+                freq_word = self.train_set[self.train_set['q1'] == clas][v].sum(
+                )
+                self.cond_smooth.loc[clas, v] = (freq_word + self.smoothing)/(
+                    self.prior.loc[clas, 'total_words'] + vocab_size * self.smoothing)
+                self.cond.loc[clas, v] = freq_word / \
+                    self.prior.loc[clas, 'total_words']
+
         print("prior probability")
         print(self.prior)
         print("conditional probability with no smoothing")
         print(self.cond)
         print("conditional probability with smoothing")
         print(self.cond_smooth)
-      
 
     def predict(self, data_X: DataFrame, data_Y: DataFrame, class_name: str):
 
@@ -95,7 +96,7 @@ class nb_classifier:
         print(predict_data)
 
         output = pd.DataFrame(index=predict_data.index, columns=[
-                              "tid","prediction", "score"])
+                              "tid", "prediction", "score"])
 
         print("Predicting")
         tweets = predict_data.index
@@ -129,17 +130,18 @@ class nb_classifier:
             output.loc[tweet, 'score'] = "{:e}".format(final_score)
             output.loc[tweet, 'prediction'] = prediction
 
-
         # add correct answer to output
         output = output.join(data_Y.set_index('tid'))
         # add correctness
-        output.loc[output['prediction'] == output[class_name], 'correctness'] = 'correct'
-        output.loc[output['prediction'] != output[class_name], 'correctness'] = 'wrong'
+        output.loc[output['prediction'] ==
+                   output[class_name], 'correctness'] = 'correct'
+        output.loc[output['prediction'] !=
+                   output[class_name], 'correctness'] = 'wrong'
         output['tid'] = output.index
         print(output)
         self.output = output
-        getAccuracy(output)
-        getEvaluationMetrics(output)
+        # getAccuracy(output)
+        # getEvaluationMetrics(output)
         return output
 
     def score(self):
@@ -158,9 +160,10 @@ def getAccuracy(output):
     #print("Accuracy: " + str(accuracy))
     return accuracy
 
-def getEvaluationMetrics(output):
+
+def getEvaluationMetrics(output, filename):
     matrixTable = [[0, 0], [0, 0]]
-    
+
     for i, j in zip(output.prediction, output.q1):
         if(i == 'yes' and j == 'yes'):
             matrixTable[0][0] = matrixTable[0][0] + 1
@@ -179,7 +182,7 @@ def getEvaluationMetrics(output):
     FPOfNo = matrixTable[1][0]
     FNOfNo = matrixTable[0][1]
 
-    #print(matrixTable)
+    # print(matrixTable)
 
     PrecisionOfYes = TPOfYes / (TPOfYes + FPOfYes)
     RecallOfYes = TPOfYes / (TPOfYes + FNOfYes)
@@ -189,35 +192,71 @@ def getEvaluationMetrics(output):
     RecallOfNo = TPOfNo / (TPOfNo + FNOfNo)
     F1OfNo = 2 * PrecisionOfNo * RecallOfNo / (PrecisionOfNo + RecallOfNo)
 
-    filename = "output/eval_NB-BOW-OV.txt"
-    f = open(filename, "w")
+    file = "output/eval_"+filename+".txt"
+    f = open(file, "w")
 
     f.write(str(round(getAccuracy(output), 4)) + '\n')
-    f.write(str(round(PrecisionOfYes, 4)) + " " + str(round(PrecisionOfNo, 4)) + '\n')
-    f.write(str(round(RecallOfYes, 4)) + " " + str(round(RecallOfNo, 4)) + '\n')
+    f.write(str(round(PrecisionOfYes, 4)) + " " +
+            str(round(PrecisionOfNo, 4)) + '\n')
+    f.write(str(round(RecallOfYes, 4)) + " " +
+            str(round(RecallOfNo, 4)) + '\n')
     f.write(str(round(F1OfYes, 4)) + " " + str(round(F1OfNo, 4)) + '\n')
     f.close()
 
-def main():
-    train_data = getOriginalVocabulary('./data/sample1.tsv')
-    train_data_X = train_data.iloc[:, :-1]
-    train_data_Y = train_data.iloc[:, -2:]
+def getTrace(output, filename):
+    file = './output/trace_'+filename+'.txt'
+    # output to file
+    np.savetxt(file, output.values, fmt='%s  %s  %s  %s  %s')
 
+def OV():
+  # original vocab
+    train_data_ov = getOriginalVocabulary('./data/covid_training.tsv')
+    train_data_ov_X = train_data_ov.iloc[:, :-1]
+    train_data_ov_Y = train_data_ov.iloc[:, -2:]
+
+    # test data
     test_data = getOriginalVocabulary('./data/covid_test_public.tsv')
     test_data_X = test_data.iloc[:, :-1]
     test_data_Y = test_data.iloc[:, -2:]
 
-    nb_class = nb_classifier(0.01, 'log')
-    nb_class.train(train_data_X, train_data_Y, "q1")
+    # original vocab classifier
+    nb_class_ov = nb_classifier(0.01, 'log')
+    nb_class_ov.train(train_data_ov_X, train_data_ov_Y, "q1")
 
-    ov_output = nb_class.predict(test_data_X, test_data_Y, "q1")
+    # predict 
+    ov_output = nb_class_ov.predict(test_data_X, test_data_Y, "q1")
+    getTrace(ov_output,"NB-BOW-OV")
+    getEvaluationMetrics(ov_output, "NB-BOW-OV")
 
-    filename = './output/trace_NB-BOW-OV.txt'
-    # with open(filename,'w') as outfile:
-    #     ov_output.to_string(outfile, index=False, header=False)
 
-    # output to file
-    np.savetxt(filename, ov_output.values, fmt='%s  %s  %s  %s  %s')
+
+def FV():
+    
+    # filtered vocab
+    train_data_fv = getFilteredVocabulary('./data/covid_training.tsv')
+    train_data_fv_X = train_data_fv.iloc[:, :-1]
+    train_data_fv_Y = train_data_fv.iloc[:, -2:]
+
+    # test data
+    test_data = getOriginalVocabulary('./data/covid_test_public.tsv')
+    test_data_X = test_data.iloc[:, :-1]
+    test_data_Y = test_data.iloc[:, -2:]
+
+    # Filtered vocab classifier
+    nb_class_fv = nb_classifier(0.01, 'log')
+    nb_class_fv.train(train_data_fv_X, train_data_fv_Y, "q1")
+
+    # predict 
+    fv_output = nb_class_fv.predict(test_data_X, test_data_Y, "q1")
+    getTrace(fv_output,"NB-BOW-FV")
+    getEvaluationMetrics(fv_output, "NB-BOW-FV")
+
+
+
+def main():
+    OV()
+    FV()
+
 
 
 main()
